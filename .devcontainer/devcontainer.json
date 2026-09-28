@@ -1,0 +1,16 @@
+{
+  "name": "Secure Messenger Build",
+  "image": "mcr.microsoft.com/devcontainers/android",
+  "features": {
+    "ghcr.io/devcontainers/features/node:latest": {}
+  },
+  "remoteUser": "root",
+  "postCreateCommand": "npm install -g expo-cli eas-cli && npm install",
+  "customizations": {
+    "codespaces": {
+      "openFiles": [
+        "APK_BUILD_INSTRUCTIONS.md"
+      ]
+    }
+  }
+}
