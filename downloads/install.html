@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Secure Messenger APK</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 40px; background: #f5f5f5; }
+        .container { background: white; padding: 30px; border-radius: 10px; max-width: 500px; margin: 0 auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; margin-bottom: 10px; }
+        .subtitle { color: #666; margin-bottom: 30px; }
+        button { padding: 15px 30px; font-size: 16px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; width: 100%; }
+        button:hover { background: #764ba2; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <h1>🔒 Secure Messenger</h1>
+        <p class='subtitle'>E2E encrypted messaging app</p>
+        <button onclick='downloadAPK()' id='btn'>📥 Download & Install APK</button>
+        <p id='status' style='margin-top: 20px; color: #666;'></p>
+    </div>
+
+    <script>
+        function downloadAPK() {
+            const btn = document.getElementById('btn');
+            const status = document.getElementById('status');
+            btn.disabled = true;
+            status.textContent = 'Preparing download...';
+            
+            setTimeout(() => {
+                const apkBase64 = '';
+                const binaryString = atob(apkBase64);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                
+                const blob = new Blob([bytes], {type: 'application/vnd.android.package-archive'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'secure-messenger.apk';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                status.textContent = '✓ Download started! Tap Install when prompted.';
+                status.style.color = '#4CAF50';
+                setTimeout(() => { btn.disabled = false; }, 2000);
+            }, 500);
+        }
+        
+        // Auto-trigger on mobile
+        if (/Android|iPhone/i.test(navigator.userAgent)) {
+            window.addEventListener('load', () => { setTimeout(downloadAPK, 1000); });
+        }
+    </script>
+</body>
+</html>
