@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Messenger APK</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 { color: #333; margin-bottom: 10px; font-size: 28px; }
+        .subtitle { color: #666; margin-bottom: 30px; font-size: 14px; }
+
+        .download-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        .download-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102,126,234,0.4); }
+        .download-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .progress-container { margin: 20px 0; display: none; }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .progress-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .status { font-size: 14px; color: #666; margin: 20px 0; min-height: 20px; }
+        .error { color: #d32f2f; }
+        .success { color: #388e3c; }
+
+        .info {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #555;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔒 Secure Messenger</h1>
+        <p class="subtitle">End-to-end encrypted messaging</p>
+
+        <button class="download-btn" id="downloadBtn" onclick="startDownload()">
+            📥 Download APK (1.43 KB)
+        </button>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Downloading...</div>
+        </div>
+
+        <div class="status" id="status"></div>
+
+        <div class="info">
+            <strong>Security:</strong> E2E encrypted (NaCl), zero-knowledge server, device-side key generation
+        </div>
+    </div>
+
+    <script>
+        async function startDownload() {
+            const btn = document.getElementById('downloadBtn');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const status = document.getElementById('status');
+
+            btn.disabled = true;
+            progressContainer.style.display = 'block';
+            status.textContent = '';
+
+            try {
+                // Use jsDelivr CDN for better Android support
+                const url = 'https://cdn.jsdelivr.net/gh/originwear/secure-messenger@master/downloads/app-release.apk';
+
+                const response = await fetch(url, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0',
+                        'Accept': 'application/octet-stream'
+                    }
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const reader = response.body.getReader();
+                const chunks = [];
+                const contentLength = parseInt(response.headers.get('content-length') || 1467);
+                let received = 0;
+
+                while (true) {
+                    const {done, value} = await reader.read();
+                    if (done) break;
+                    chunks.push(value);
+                    received += value.length;
+                    const percent = Math.round((received / contentLength) * 100);
+                    progressFill.style.width = percent + '%';
+                    progressText.textContent = `${percent}% - ${(received / 1024).toFixed(2)} KB`;
+                }
+
+                const blob = new Blob(chunks, {type: 'application/vnd.android.package-archive'});
+                const url_blob = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url_blob;
+                a.download = 'secure-messenger.apk';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url_blob);
+
+                status.textContent = '✓ Download started! Check your downloads folder.';
+                status.className = 'success';
+                progressText.textContent = '100% - Downloaded';
+                progressFill.style.width = '100%';
+
+            } catch (error) {
+                status.textContent = '✗ Error: ' + error.message;
+                status.className = 'error';
+                progressContainer.style.display = 'none';
+                btn.disabled = false;
+            }
+        }
+
+        // Auto-trigger on mobile
+        if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
+            window.addEventListener('load', () => {
+                setTimeout(startDownload, 800);
+            });
+        }
+    </script>
+</body>
+</html>
